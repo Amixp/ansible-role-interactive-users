@@ -23,7 +23,8 @@
     state: present
     name: "{{ item.username }}"
     generate_ssh_key: yes
-  with_items: interactive_users 
+    home: "{{ item.home|default('~') }}"
+  with_items: "{{ interactive_users }}"
 
 - name: Add user to additional groups
   user:
@@ -31,37 +32,37 @@
     append: yes
     groups: "{{ item.groups }}"
   when: item.groups is defined
-  with_items: interactive_users
+  with_items: "{{ interactive_users }}"
 
 - name: Clone oh-my-zsh repo
   git: repo=https://github.com/robbyrussell/oh-my-zsh.git dest="~{{ item.username }}/.oh-my-zsh" update=yes force=yes
-  with_items: interactive_users
+  with_items: "{{ interactive_users }}"
 
 - name: Install .zshrc
   template: src=zshrc.j2 dest="~{{ item.username }}/.zshrc" owner="{{ item.username }}"
-  with_items: interactive_users
+  with_items: "{{ interactive_users }}"
 
 - name: Set zsh as default shell
   user: name="{{ item.username }}" shell=/bin/zsh
-  with_items: interactive_users
+  with_items: "{{ interactive_users }}"
 
 - name: Authorize local ssh key
   tags: ssh_keys
   authorized_key: user="{{ item.username }}" key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
   when: item.authorize_local_key|default(false)
-  with_items: interactive_users
+  with_items: "{{ interactive_users }}"
 
 - name: Authorize ssh keys
   tags: ssh_keys
   authorized_key: user="{{ item[0].username }}" key="{{ item[1] }}"
   with_subelements:
-    - interactive_users
+    - "{{ interactive_users }}"
     - authorized_keys
 
 - name: Add ssh config
   template: src="{{ item.ssh_config_path }}" dest="~{{ item.username }}/.ssh/config" owner="{{ item.username }}"
   when: item.ssh_config_path|default(false)
-  with_items: interactive_users
+  with_items: "{{ interactive_users }}"
 
 - name: Allow users to manage vital services using sudo
   tags: ['sudoers']
@@ -72,7 +73,7 @@
     line: "{{ item[0].username }} ALL=NOPASSWD: /sbin/service {{ item[1] }} *"
     state: present
   with_subelements:
-    - interactive_users
+    - "{{ interactive_users }}"
     - managed_services
 
 - name: Allow users to use sudo without a tty
@@ -84,7 +85,7 @@
     line: "Defaults:{{ item[0].username }} !requiretty"
     state: present
   with_subelements:
-    - interactive_users
+    - "{{ interactive_users }}"
     - managed_services
 
 
