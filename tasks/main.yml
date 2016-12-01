@@ -36,6 +36,9 @@
 
 - name: Clone oh-my-zsh repo
   git: repo=https://github.com/robbyrussell/oh-my-zsh.git dest="~{{ item.username }}/.oh-my-zsh" update=yes force=yes
+  become_user: "{{ item.username }}"
+  become_method: su
+  become: yes
   with_items: "{{ interactive_users }}"
 
 - name: Install .zshrc
@@ -75,6 +78,32 @@
   with_subelements:
     - "{{ interactive_users }}"
     - managed_services
+
+- name: Allow users to manage vital services using sudo (sysvinit)
+  tags: ['sudoers']
+  lineinfile:
+    create: yes
+    dest: "/etc/sudoers.d/{{ item[0].username }}"
+    regexp: "^\\w*{{ item[0].username }}.*{{ item[1] }}.*"
+    line: "{{ item[0].username }} ALL=NOPASSWD: /sbin/service {{ item[1] }} *"
+    state: present
+  with_subelements:
+    - "{{ interactive_users }}"
+    - managed_services
+  when: ansible_distribution_major_version == "6"
+
+- name: Allow users to manage vital services using sudo (systemd)
+  tags: ['sudoers']
+  lineinfile:
+    create: yes
+    dest: "/etc/sudoers.d/{{ item[0].username }}"
+    regexp: "^\\w*{{ item[0].username }}.*{{ item[1] }}.*"
+    line: "{{ item[0].username }} ALL=NOPASSWD: /bin/systemctl [[\\:alpha\\:]]* {{ item[1] }}"
+    state: present
+  with_subelements:
+    - "{{ interactive_users }}"
+    - managed_services
+  when: ansible_distribution_major_version == "7"
 
 - name: Allow users to use sudo without a tty
   tags: ['sudoers']
