@@ -35,7 +35,12 @@
   with_items: "{{ interactive_users }}"
 
 - name: Clone oh-my-zsh repo
-  git: repo=https://github.com/robbyrussell/oh-my-zsh.git dest="~{{ item.username }}/.oh-my-zsh" update=yes force=yes
+  git:
+    repo: https://github.com/robbyrussell/oh-my-zsh.git
+    dest: "~{{ item.username }}/.oh-my-zsh"
+    update: yes
+    force: yes
+    depth: 1
   become_user: "{{ item.username }}"
   become_method: su
   become: yes
