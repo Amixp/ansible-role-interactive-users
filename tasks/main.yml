@@ -18,6 +18,13 @@
     src: nanorc
     dest: /etc/nanorc
 
+- name: Ensure base directory exists
+  file:
+    state: directory
+    dest: "{{ item.home|dirname }}"
+  when: item.home is defined
+  with_items: "{{ interactive_users }}"
+
 - name: Create user
   user:
     state: present
