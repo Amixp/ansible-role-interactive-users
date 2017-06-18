@@ -33,6 +33,13 @@
     home: "{{ item.home|default('~') }}"
   with_items: "{{ interactive_users }}"
 
+- name: Set user uid
+  user:
+    name: "{{ item.username }}"
+    uid: "{{ item.uid }}"
+  when: item.uid is defined
+  with_items: "{{ interactive_users }}"
+
 - name: Add user to additional groups
   user:
     name: "{{ item.username }}"
