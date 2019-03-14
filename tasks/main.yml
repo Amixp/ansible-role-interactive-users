@@ -1,17 +1,17 @@
 - name: Install basic tools
-  yum: name="{{ item }}" state=present
-  with_items:
-    - zsh
-    - git
-    - nano
-    - mc
-    - wget
-    - nmap
-    - bind-utils
-    - yum-utils
-    - unzip
-    - strace
-    - curl
+  yum: 
+    name: 
+      - zsh
+      - git
+      - nano
+      - mc
+      - wget
+      - nmap
+      - bind-utils
+      - yum-utils
+      - unzip
+      - strace
+      - curl
 
 - name: Install nano config
   copy:
