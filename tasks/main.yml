@@ -1,6 +1,6 @@
 - name: Install basic tools
   yum: 
-    name: 
+    name:
       - zsh
       - git
       - nano
@@ -12,6 +12,7 @@
       - unzip
       - strace
       - curl
+      - htop
 
 - name: Install nano config
   copy:
